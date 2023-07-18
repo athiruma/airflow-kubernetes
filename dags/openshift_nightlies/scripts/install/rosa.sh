@@ -32,7 +32,7 @@ _wait_for_nodes_ready(){
     ALL_READY_ITERATIONS=0
     ITERATIONS=0
     if [ "$3" == "rosa-spots=true" ]; then
-        NODES_COUNT=$2
+            NODES_COUNT=$2
     else
         if [ "$SPOT_POOL_READY" == "true" ]; then
             # Node count is number of workers pool + 3 infra + 3 default Nodes
@@ -177,6 +177,7 @@ setup(){
     return 0
 }
 
+
 install(){
     export COMPUTE_WORKERS_TYPE=$(cat ${json_file} | jq -r .openshift_worker_instance_type)
     export CLUSTER_AUTOSCALE=$(cat ${json_file} | jq -r .cluster_autoscale)
@@ -184,7 +185,7 @@ install(){
     export INSTALLATION_PARAMS=""
     if [ $AWS_AUTHENTICATION_METHOD == "sts" ] ; then
         INSTALLATION_PARAMS="${INSTALLATION_PARAMS} --sts -m auto --yes"
-     if [ "$ENABLE_SPOT_WORKERS" == "true" ]; then
+    if [ "$ENABLE_SPOT_WORKERS" == "true" ]; then
             rosa create cluster --tags=User:${GITHUB_USERNAME} --cluster-name ${CLUSTER_NAME} --version "${ROSA_VERSION}" --channel-group=${MANAGED_CHANNEL_GROUP} --compute-machine-type ${COMPUTE_WORKERS_TYPE} --network-type ${NETWORK_TYPE} ${INSTALLATION_PARAMS} ${ROSA_HCP_PARAMS}
             _wait_for_cluster_ready ${CLUSTER_NAME}
             rosa create machinepool -c ${CLUSTER_NAME} --name="${CLUSTER_NAME}-spot-pool" --replicas=${COMPUTE_WORKERS_NUMBER} --instance-type="${COMPUTE_WORKERS_TYPE}" --labels="rosa-spots=true" --use-spot-instances
