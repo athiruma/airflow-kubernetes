@@ -181,7 +181,6 @@ install(){
     export COMPUTE_WORKERS_TYPE=$(cat ${json_file} | jq -r .openshift_worker_instance_type)
     export CLUSTER_AUTOSCALE=$(cat ${json_file} | jq -r .cluster_autoscale)
     export OIDC_CONFIG=$(cat ${json_file} | jq -r .oidc_config)
-<<<<<<< HEAD
     export INSTALLATION_PARAMS=""
     if [ $AWS_AUTHENTICATION_METHOD == "sts" ] ; then
         INSTALLATION_PARAMS="${INSTALLATION_PARAMS} --sts -m auto --yes"
