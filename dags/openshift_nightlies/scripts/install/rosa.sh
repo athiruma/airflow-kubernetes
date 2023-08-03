@@ -37,9 +37,13 @@ _wait_for_nodes_ready(){
         if [ "$SPOT_POOL_READY" == "true" ]; then
             # Node count is number of workers pool + 3 infra + 3 default Nodes
             NODES_COUNT=$(($2+3+3))
-        else
-            # Node count is number of workers + 3 infra
-            NODES_COUNT=$(($2+3))
+        elif [ "$ENABLE_SPOT_WORKERS" == "true" ]; then
+                # 3 default worker nodes + 3 infra
+                NODES_COUNT=$((3+3))
+            else
+                # Node count is number of workers + 3 infra
+                NODES_COUNT=$(($2+3))
+            fi
         fi
     fi
     # 30 seconds per node, waiting for all nodes ready to finalize
@@ -186,11 +190,13 @@ install(){
     if [ $AWS_AUTHENTICATION_METHOD == "sts" ] ; then
         INSTALLATION_PARAMS="${INSTALLATION_PARAMS} --sts -m auto --yes"
     if [ "$ENABLE_SPOT_WORKERS" == "true" ]; then
-            rosa create cluster --tags=User:${GITHUB_USERNAME} --cluster-name ${CLUSTER_NAME} --version "${ROSA_VERSION}" --channel-group=${MANAGED_CHANNEL_GROUP} --compute-machine-type ${COMPUTE_WORKERS_TYPE} --network-type ${NETWORK_TYPE} ${INSTALLATION_PARAMS} ${ROSA_HCP_PARAMS}
-            _wait_for_cluster_ready ${CLUSTER_NAME}
-            rosa create machinepool -c ${CLUSTER_NAME} --name="${CLUSTER_NAME}-spot-pool" --replicas=${COMPUTE_WORKERS_NUMBER} --instance-type="${COMPUTE_WORKERS_TYPE}" --labels="rosa-spots=true" --use-spot-instances
+        rosa create cluster --tags=User:${GITHUB_USERNAME} --cluster-name ${CLUSTER_NAME} --version "${ROSA_VERSION}" --channel-group=${MANAGED_CHANNEL_GROUP} --compute-machine-type ${COMPUTE_WORKERS_TYPE} --network-type ${NETWORK_TYPE} ${INSTALLATION_PARAMS} ${ROSA_HCP_PARAMS}
+        _wait_for_cluster_ready ${CLUSTER_NAME}
+        if [ "$COMPUTE_WORKERS_NUMBER" != "3"]; then
+            rosa create machinepool -c ${CLUSTER_NAME} --name="${CLUSTER_NAME}-spot-pool" --replicas=${COMPUTE_WORKERS_NUMBER}-3 --instance-type="${COMPUTE_WORKERS_TYPE}" --labels="rosa-spots=true" --use-spot-instances
             _wait_for_nodes_ready $CLUSTER_NAME $COMPUTE_WORKERS_NUMBER "rosa-spots=true"
             export SPOT_POOL_READY=true
+        fi
     else
         rosa create cluster --tags=User:${GITHUB_USERNAME} --cluster-name ${CLUSTER_NAME} --version "${ROSA_VERSION}" --channel-group=${MANAGED_CHANNEL_GROUP} --compute-machine-type ${COMPUTE_WORKERS_TYPE} --replicas ${COMPUTE_WORKERS_NUMBER} --network-type ${NETWORK_TYPE} ${INSTALLATION_PARAMS} ${ROSA_HCP_PARAMS}
     fi
