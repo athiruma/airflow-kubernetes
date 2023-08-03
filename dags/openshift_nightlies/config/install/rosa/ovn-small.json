@@ -8,10 +8,10 @@
     "ocm_environment": "stage",
     "managed_channel_group": "nightly",
     "managed_ocp_version": "latest",
-    "openshift_worker_count": 24,
+    "openshift_worker_count": 9,
     "openshift_network_type": "OVNKubernetes",
     "openshift_worker_instance_type": "m5.2xlarge",
     "machineset_metadata_label_prefix": "machine.openshift.io",
     "openshift_workload_node_instance_type": null,
-    "enable_spot_workers": false
+    "enable_spot_workers": true
 }
